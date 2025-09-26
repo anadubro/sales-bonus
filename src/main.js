@@ -39,7 +39,11 @@ function calculateBonusByProfit(index, total, seller) {
  */
 function analyzeSalesData(data, options) {
     // @TODO: Проверка входных данных
-    if (!data || !data.sellers || !data.products) {
+    if (!data
+        || !Array.isArray(data.sellers) || data.sellers.length === 0
+        || !Array.isArray(data.products) || data.products.length === 0
+        || !Array.isArray(data.purchase_records) || data.purchase_records.length === 0
+    ) {
         throw new Error('Некорректные входные данные');
     } 
 
@@ -81,7 +85,7 @@ function analyzeSalesData(data, options) {
             sellerInfo.profit += itemProfit;
             sellerInfo.sales_count += purchaseItem.quantity;
 
-            if(sellerInfo.productById[purchaseItem.sku]) {
+            if(!sellerInfo.productById[purchaseItem.sku]) {
                 sellerInfo.productById[purchaseItem.sku] = 0;
             }
             sellerInfo.productById[purchaseItem.sku] += purchaseItem.quantity;
@@ -93,13 +97,24 @@ function analyzeSalesData(data, options) {
     );
 
     sellerList.forEach((seller, index) => {
-        seller.top_products = Object.values(seller.productById).sort(
+        seller.top_products = Object.entries(seller.productById).sort(
             (a, b) => a.quantity - b.quantity
-        ).slice(0, 10);
+        ).slice(0, 10).map(([sku, quantity]) => ({ sku, quantity }));;
+        
         delete seller.productById;
-
+        console.log(seller.top_products);
+        
         seller.bonus += calculateBonus(index, sellerList.length, seller);
+
+
+        seller.profit = parseFloat(seller.profit.toFixed(2));
+        seller.revenue = parseFloat(seller.revenue.toFixed(2));
+        seller.bonus = parseFloat(seller.bonus.toFixed(2));
     });
+
+    console.table();
+
+
 
     return sellerList;
 
