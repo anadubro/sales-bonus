@@ -85,9 +85,8 @@ function analyzeSalesData(data, options) {
             let itemRevenue = calculateRevenue(purchaseItem, productBySku[purchaseItem.sku]);
             let itemProfit = itemRevenue - productBySku[purchaseItem.sku].purchase_price * purchaseItem.quantity;
 
-            sellerInfo.revenue += itemRevenue;
+            sellerInfo.revenue += parseFloat(itemRevenue.toFixed(2));
             sellerInfo.profit += itemProfit;
-            // sellerInfo.sales_count += purchaseItem.quantity;
 
             if(!sellerInfo.productById[purchaseItem.sku]) {
                 sellerInfo.productById[purchaseItem.sku] = 0;
@@ -101,12 +100,12 @@ function analyzeSalesData(data, options) {
     );
 
     sellerList.forEach((seller, index) => {
-        seller.top_products = Object.entries(seller.productById).sort(
+        seller.top_products = Object.entries(seller.productById).map(([sku, quantity]) => ({ sku, quantity })).sort(
             (a, b) => b.quantity - a.quantity
-        ).slice(0, 10).map(([sku, quantity]) => ({ sku, quantity }));;
+        ).slice(0, 10);
         
         delete seller.productById;
-        
+
         seller.bonus += calculateBonus(index, sellerList.length, seller);
 
 
